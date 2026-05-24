@@ -19,8 +19,8 @@ export const shippingInfoSchema = z.object({
   city: z.string().min(1),
   state: z.string().min(1),
   country: z.string().min(1),
-  pinCode: z.string().min(1),
-  phoneNo: z.string().min(1),
+  pinCode: z.number().int(),
+  phoneNo: z.number().int(),
 });
 export type ShippingInfo = z.infer<typeof shippingInfoSchema>;
 
@@ -45,6 +45,7 @@ export type OrderStatus = z.infer<typeof orderStatusEnum>;
 
 export const orderSchema = z.object({
   id: z.string(),
+  _id: z.string().optional(),
   user: z.string().optional(),
   shippingInfo: shippingInfoSchema,
   orderItems: z.array(orderItemSchema),

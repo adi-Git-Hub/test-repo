@@ -23,7 +23,7 @@ function apiOrigin(): string {
 export function resolveImageUrl(url: string | null | undefined): string {
   if (!url) return FALLBACK_IMAGE;
   if (/^https?:\/\//i.test(url) || url.startsWith("data:")) return url;
-  if (url.startsWith("/")) return `${apiOrigin()}${url}`;
+  if (url.startsWith("/uploads/")) return `${apiOrigin()}${url}`;
   return url;
 }
 

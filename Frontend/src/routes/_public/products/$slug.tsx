@@ -1,4 +1,4 @@
-import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { ChevronRight, Check } from "lucide-react";
 import { motion } from "framer-motion";
@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProduct } from "@/features/catalog/api";
 import { useCart } from "@/features/cart/hooks/useCart";
+import { useSession } from "@/features/auth/hooks/useSession";
+import { useCheckoutStore } from "@/features/checkout/store";
 import { viewportOnce } from "@/design-system";
 
 export const Route = createFileRoute("/_public/products/$slug")({
@@ -14,7 +16,6 @@ export const Route = createFileRoute("/_public/products/$slug")({
 });
 
 type SolivaProduct = {
-  id: string;
   slug: string;
   name: string;
   line: string;
@@ -31,7 +32,6 @@ type SolivaProduct = {
 
 const solivaProducts: readonly SolivaProduct[] = [
   {
-    id: "01",
     slug: "soliva-airshield-wrap",
     name: "Soliva AirShield Wrap",
     line: "Sculpted coverage. Silent confidence.",
@@ -55,7 +55,6 @@ const solivaProducts: readonly SolivaProduct[] = [
     compareAtCents: 120000,
   },
   {
-    id: "02",
     slug: "soliva-urban-veil",
     name: "Soliva Urban Veil",
     line: "City-weight protection. Zero compromise.",
@@ -79,7 +78,6 @@ const solivaProducts: readonly SolivaProduct[] = [
     compareAtCents: 120000,
   },
   {
-    id: "03",
     slug: "soliva-heatguard",
     name: "Soliva HeatGuard",
     line: "Thermal intelligence. All-day calm.",
@@ -103,7 +101,6 @@ const solivaProducts: readonly SolivaProduct[] = [
     compareAtCents: 120000,
   },
   {
-    id: "04",
     slug: "soliva-motioncover",
     name: "Soliva MotionCover",
     line: "Moves with you. Stays in place.",
@@ -127,7 +124,6 @@ const solivaProducts: readonly SolivaProduct[] = [
     compareAtCents: 120000,
   },
   {
-    id: "05",
     slug: "soliva-airlite-shield",
     name: "Soliva AirLite Shield",
     line: "Barely there. Completely covered.",
@@ -166,10 +162,18 @@ function ProductRoute() {
 
 function SolivaProductDetail({ product }: { product: SolivaProduct }) {
   const { add: addToCart } = useCart();
+  const navigate = useNavigate();
+  const session = useSession();
+  const setCheckoutItems = useCheckoutStore((s) => s.setItems);
+
+  const { data: dbProduct } = useProduct(product.slug);
+  const productId = dbProduct?.id ?? product.slug;
+  const editionNum = solivaProducts.indexOf(product) + 1;
+  const editionId = String(editionNum).padStart(2, "0");
 
   function onAdd() {
     addToCart({
-      productId: product.id,
+      productId,
       slug: product.slug,
       name: product.name,
       image: product.image,
@@ -180,8 +184,22 @@ function SolivaProductDetail({ product }: { product: SolivaProduct }) {
   }
 
   function onBuyNow() {
-    onAdd();
-    toast.info("Checkout coming soon — item added to cart");
+    if (!session?.user) {
+      toast.message("Sign in to continue");
+      return;
+    }
+    if (!dbProduct) {
+      toast.error("Product loading, please try again");
+      return;
+    }
+    setCheckoutItems([{
+      productId,
+      name: product.name,
+      image: product.image,
+      price: product.priceCents / 100,
+      quantity: 1,
+    }]);
+    navigate({ to: "/checkout" });
   }
 
   return (
@@ -242,7 +260,7 @@ function SolivaProductDetail({ product }: { product: SolivaProduct }) {
                 <div className="absolute top-5 sm:top-6 left-5 sm:left-6 bg-surface-glass-strong backdrop-blur-subtle rounded-2xl px-3 py-2 shadow-sm">
                   <div className="flex flex-col items-center gap-0.5">
                     <span className="font-mono text-micro-xs tracking-cta text-brown-deep/60 uppercase font-bold">Edition</span>
-                    <span className="font-mono text-sm tracking-tighter text-brown-deep font-bold">{product.id}</span>
+                    <span className="font-mono text-sm tracking-tighter text-brown-deep font-bold">{editionId}</span>
                   </div>
                 </div>
 
@@ -264,7 +282,7 @@ function SolivaProductDetail({ product }: { product: SolivaProduct }) {
             <div className="flex items-center gap-3 mb-3">
               <span className="block h-px w-5 bg-brown/20" />
               <span className="font-mono text-micro-sm tracking-editorial text-orange-glow uppercase font-bold">
-                SS 26 · Edition {product.id}
+                SS 26 · Edition {editionId}
               </span>
             </div>
             <h1
@@ -387,6 +405,9 @@ function SolivaProductDetail({ product }: { product: SolivaProduct }) {
 function ApiProductDetail({ slug }: { slug: string }) {
   const { data: product, isLoading, isError } = useProduct(slug);
   const { add: addToCart } = useCart();
+  const navigate = useNavigate();
+  const session = useSession();
+  const setCheckoutItems = useCheckoutStore((s) => s.setItems);
 
   if (isError) throw notFound();
 
@@ -415,6 +436,22 @@ function ApiProductDetail({ slug }: { slug: string }) {
       currency: product.currency,
     });
     toast.success(`${product.name} added to cart`);
+  }
+
+  function onBuyNow() {
+    if (!product) return;
+    if (!session?.user) {
+      toast.message("Sign in to continue");
+      return;
+    }
+    setCheckoutItems([{
+      productId: product.id,
+      name: product.name,
+      image: product.images[0],
+      price: product.priceCents / 100,
+      quantity: 1,
+    }]);
+    navigate({ to: "/checkout" });
   }
 
   return (
@@ -463,14 +500,26 @@ function ApiProductDetail({ slug }: { slug: string }) {
             <p className="text-base leading-relaxed text-ink-soft font-light italic">
               {product.description}
             </p>
-            <Button
-              size="lg"
-              className="w-full rounded-full py-5 sm:py-6 bg-brown-deep text-white hover:bg-brown transition-all duration-500 font-bold uppercase tracking-cta text-micro-lg"
-              onClick={onAdd}
-              disabled={!product.inStock}
-            >
-              {product.inStock ? "Add to cart" : "Out of stock"}
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button
+                size="lg"
+                className="w-full rounded-full py-5 sm:py-6 bg-brown-deep text-white hover:bg-brown transition-all duration-500 font-bold uppercase tracking-cta text-micro-lg"
+                onClick={onAdd}
+                disabled={!product.inStock}
+              >
+                {product.inStock ? "Add to cart" : "Out of stock"}
+              </Button>
+              {product.inStock && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full rounded-full py-5 sm:py-6 border-brown-deep/20 text-brown-deep hover:bg-brown-deep hover:text-white transition-all duration-500 font-bold uppercase tracking-cta text-micro-lg"
+                  onClick={onBuyNow}
+                >
+                  Buy Now
+                </Button>
+              )}
+            </div>
           </motion.div>
         </div>
       </article>

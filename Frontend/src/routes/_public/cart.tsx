@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { ShoppingBag } from "lucide-react";
 
@@ -8,22 +8,33 @@ import { CartSummary } from "@/features/cart/components/CartSummary";
 import { useCart } from "@/features/cart/hooks/useCart";
 import { useSession } from "@/features/auth/hooks/useSession";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { useCheckoutStore } from "@/features/checkout/store";
 
 export const Route = createFileRoute("/_public/cart")({
   component: CartRoute,
 });
 
 function CartRoute() {
-  const { lines } = useCart();
+  const { lines, subtotalCents } = useCart();
   const session = useSession();
+  const navigate = useNavigate();
+  const setCheckoutItems = useCheckoutStore((s) => s.setItems);
 
   function onCheckout() {
-    if (!session) {
+    if (!session?.user) {
       toast.message("Sign in to continue to checkout");
       return;
     }
-    // Phase 2 — wire to /checkout when the route lands
-    toast.info("Checkout coming in Phase 2");
+    setCheckoutItems(
+      lines.map((l) => ({
+        productId: l.productId,
+        name: l.name,
+        image: l.image,
+        price: l.priceCents / 100,
+        quantity: l.quantity,
+      }))
+    );
+    navigate({ to: "/checkout" });
   }
 
   return (

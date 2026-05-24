@@ -19,7 +19,9 @@ import { Route as PublicTechnologyRouteImport } from './routes/_public/technolog
 import { Route as PublicStoryRouteImport } from './routes/_public/story'
 import { Route as PublicSearchRouteImport } from './routes/_public/search'
 import { Route as PublicProfileRouteImport } from './routes/_public/profile'
+import { Route as PublicOrderConfirmedRouteImport } from './routes/_public/order-confirmed'
 import { Route as PublicCollectionRouteImport } from './routes/_public/collection'
+import { Route as PublicCheckoutRouteImport } from './routes/_public/checkout'
 import { Route as PublicCartRouteImport } from './routes/_public/cart'
 import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
@@ -79,9 +81,19 @@ const PublicProfileRoute = PublicProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicOrderConfirmedRoute = PublicOrderConfirmedRouteImport.update({
+  id: '/order-confirmed',
+  path: '/order-confirmed',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicCollectionRoute = PublicCollectionRouteImport.update({
   id: '/collection',
   path: '/collection',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicCheckoutRoute = PublicCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicCartRoute = PublicCartRouteImport.update({
@@ -144,7 +156,9 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/verify-email': typeof AuthVerifyEmailRoute
   '/cart': typeof PublicCartRoute
+  '/checkout': typeof PublicCheckoutRoute
   '/collection': typeof PublicCollectionRoute
+  '/order-confirmed': typeof PublicOrderConfirmedRoute
   '/profile': typeof PublicProfileRoute
   '/search': typeof PublicSearchRoute
   '/story': typeof PublicStoryRoute
@@ -165,7 +179,9 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/verify-email': typeof AuthVerifyEmailRoute
   '/cart': typeof PublicCartRoute
+  '/checkout': typeof PublicCheckoutRoute
   '/collection': typeof PublicCollectionRoute
+  '/order-confirmed': typeof PublicOrderConfirmedRoute
   '/profile': typeof PublicProfileRoute
   '/search': typeof PublicSearchRoute
   '/story': typeof PublicStoryRoute
@@ -189,7 +205,9 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/verify-email': typeof AuthVerifyEmailRoute
   '/_public/cart': typeof PublicCartRoute
+  '/_public/checkout': typeof PublicCheckoutRoute
   '/_public/collection': typeof PublicCollectionRoute
+  '/_public/order-confirmed': typeof PublicOrderConfirmedRoute
   '/_public/profile': typeof PublicProfileRoute
   '/_public/search': typeof PublicSearchRoute
   '/_public/story': typeof PublicStoryRoute
@@ -212,7 +230,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/verify-email'
     | '/cart'
+    | '/checkout'
     | '/collection'
+    | '/order-confirmed'
     | '/profile'
     | '/search'
     | '/story'
@@ -233,7 +253,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/verify-email'
     | '/cart'
+    | '/checkout'
     | '/collection'
+    | '/order-confirmed'
     | '/profile'
     | '/search'
     | '/story'
@@ -256,7 +278,9 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_auth/verify-email'
     | '/_public/cart'
+    | '/_public/checkout'
     | '/_public/collection'
+    | '/_public/order-confirmed'
     | '/_public/profile'
     | '/_public/search'
     | '/_public/story'
@@ -348,11 +372,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicProfileRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/order-confirmed': {
+      id: '/_public/order-confirmed'
+      path: '/order-confirmed'
+      fullPath: '/order-confirmed'
+      preLoaderRoute: typeof PublicOrderConfirmedRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/collection': {
       id: '/_public/collection'
       path: '/collection'
       fullPath: '/collection'
       preLoaderRoute: typeof PublicCollectionRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/checkout': {
+      id: '/_public/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof PublicCheckoutRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/cart': {
@@ -450,7 +488,9 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 interface PublicRouteRouteChildren {
   PublicCartRoute: typeof PublicCartRoute
+  PublicCheckoutRoute: typeof PublicCheckoutRoute
   PublicCollectionRoute: typeof PublicCollectionRoute
+  PublicOrderConfirmedRoute: typeof PublicOrderConfirmedRoute
   PublicProfileRoute: typeof PublicProfileRoute
   PublicSearchRoute: typeof PublicSearchRoute
   PublicStoryRoute: typeof PublicStoryRoute
@@ -464,7 +504,9 @@ interface PublicRouteRouteChildren {
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicCartRoute: PublicCartRoute,
+  PublicCheckoutRoute: PublicCheckoutRoute,
   PublicCollectionRoute: PublicCollectionRoute,
+  PublicOrderConfirmedRoute: PublicOrderConfirmedRoute,
   PublicProfileRoute: PublicProfileRoute,
   PublicSearchRoute: PublicSearchRoute,
   PublicStoryRoute: PublicStoryRoute,

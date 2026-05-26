@@ -26,11 +26,11 @@ export const loadingHierarchy = {
 
 export const appLoader = {
   /** Brand reveal hold — keep short. Critical images already preloaded. */
-  revealMs: 450,
+  revealMs: 300,
   /** Soft dissolve-out after reveal completes */
-  exitMs: 300,
+  exitMs: 200,
   /** Logo enter scale (90% → 100%) and fade duration */
-  logoRevealMs: 2000,
+  logoRevealMs: 500,
   /** sessionStorage key that gates the loader on subsequent visits */
   seenKey: "soliva:loader-seen",
   /** session-aware skip logic */
@@ -41,9 +41,9 @@ export const appLoader = {
 
 export const routeLoader = {
   /** Page-to-page crossfade — balanced for perceptible cinematic quality */
-  fadeMs: 300,
+  fadeMs: 150,
   /** AnimatePresence exit hold before new route renders */
-  exitMs: 250,
+  exitMs: 100,
 } as const;
 
 /* ════════ SECTION LOADER ════════ */

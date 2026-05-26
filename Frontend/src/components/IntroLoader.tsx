@@ -10,8 +10,8 @@ import {
 import { appLoader } from "@/design-system";
 import { SolivaLogo } from "./SolivaLogo";
 
-const DURATION_MS = 1100;
-const EXIT_MS = 600;
+const DURATION_MS = 600;
+const EXIT_MS = 350;
 
 export function IntroLoader() {
   const [isVisible, setIsVisible] = useState(true);

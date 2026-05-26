@@ -13,7 +13,7 @@ export function TopProgressBar() {
   const routerPending = useRouterState({ select: (s) => s.status === "pending" });
   const [isVisible, setIsVisible] = useState(false);
   const showStartTime = useRef<number | null>(null);
-  const MIN_DURATION = 500; // Minimum time in ms to show the loader
+  const MIN_DURATION = 150; // Minimum time in ms to show the loader
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;

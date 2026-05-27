@@ -36,9 +36,10 @@ import { cn } from "@/lib/utils";
 const primaryLinks: readonly { to: string; label: string; search?: Record<string, string> }[] = [
   { to: "/", label: "Home" },
   { to: "/collection", label: "Collection" },
-  { to: "/categories", label: "Catagorie" },
+  { to: "/categories", label: "Categories" },
   { to: "/story", label: "Story" },
   { to: "/technology", label: "Technology" },
+  { to: "/identity", label: "Identity" },
 ];
 
 const authLinks = [
@@ -135,13 +136,6 @@ export function Header() {
           "flex h-full w-full items-center justify-between mx-auto transition-all duration-700",
           !isScrolled && "max-w-7xl"
         )}>
-          {/* Integrated Logo — Naturally integrated footprint */}
-          <div className="flex-shrink-0 flex items-center pr-6">
-            <Link to="/" aria-label="Soliva — home" className="hover:opacity-70 transition-opacity">
-              <SolivaLogo variant="primary" height={isScrolled ? 18 : 22} loading="eager" />
-            </Link>
-          </div>
-
           {/* Desktop Nav — Engineered readable rhythm */}
           <nav className="hidden md:flex items-center gap-6 h-full">
             {primaryLinks.map((l) => (
@@ -159,13 +153,13 @@ export function Header() {
           </nav>
 
           {/* Action Cluster — Continuous Utility Strip */}
-          <div className="flex items-center gap-4 ml-auto">
+          <div className="flex items-center gap-5 ml-auto">
             {/* Search — icon-only by default; clicking the icon expands an
                 input. Same submit logic as before (navigates /search?q=...). */}
             <div className="relative flex items-center">
               {searchOpen ? (
                 <form onSubmit={onSearch} className="flex relative items-center">
-                  <Search className="absolute left-3 h-3.5 w-3.5 text-ink-muted" />
+                  <Search className="absolute left-3.5 h-4 w-4 text-ink-muted" />
                   <input
                     ref={searchRef}
                     type="text"
@@ -181,22 +175,22 @@ export function Header() {
                       }
                     }}
                     placeholder="Search..."
-                    className="h-8 w-44 rounded-md border border-border/60 bg-black/5 pl-9 pr-3 text-[12px] transition-all focus:bg-white focus:ring-1 focus:ring-orange-glow/20 outline-none"
+                    className="h-10 w-48 rounded-full border border-border/60 bg-black/5 pl-10 pr-4 text-[13px] transition-all focus:bg-white focus:ring-1 focus:ring-orange-glow/20 outline-none"
                   />
                 </form>
               ) : (
                 <button
                   type="button"
                   onClick={() => setSearchOpen(true)}
-                  className="flex h-9 px-2 items-center justify-center rounded-md text-ink-default/60 hover:text-ink-strong hover:bg-black/5 transition-all outline-none"
+                  className="flex h-10.5 px-3 items-center justify-center rounded-full text-ink-default/60 hover:text-ink-strong hover:bg-black/5 transition-all outline-none"
                   aria-label="Search"
                 >
-                  <Search className="h-4 w-4" />
+                  <Search className="h-[18px] w-[18px]" />
                 </button>
               )}
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   {session ? (
@@ -210,48 +204,48 @@ export function Header() {
                       <Avatar
                         src={session.user.avatarUrl}
                         name={session.user.name}
-                        size={40}
+                        size={44}
                       />
                     </button>
                   ) : (
                     // Signed out → unchanged icon + "Account" text trigger.
-                    <button className="flex h-9 px-2 items-center justify-center gap-2 rounded-md text-ink-default/60 hover:text-ink-strong hover:bg-black/5 transition-all outline-none">
-                      <User className="h-4 w-4" />
-                      <span className="hidden lg:inline text-[12px] font-medium">Account</span>
+                    <button className="flex h-10.5 px-4 items-center justify-center gap-2.5 rounded-full text-ink-default/70 hover:text-ink-strong hover:bg-black/5 transition-all outline-none">
+                      <User className="h-[18px] w-[18px]" />
+                      <span className="hidden lg:inline text-[13px] font-medium tracking-tight">Account</span>
                     </button>
                   )}
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={12} className="w-48 rounded-md border-border/40 shadow-md">
+                <DropdownMenuContent align="end" sideOffset={12} className="w-52 rounded-xl border-border/40 shadow-lg">
                   {session ? (
                     <>
-                      <DropdownMenuLabel className="px-3 py-2">
-                        <span className="block text-[8px] tracking-widest text-muted-foreground uppercase font-bold">Account</span>
-                        <div className="truncate text-xs font-medium">{session.user.name}</div>
+                      <DropdownMenuLabel className="px-4 py-3">
+                        <span className="block text-[9px] tracking-[0.2em] text-muted-foreground uppercase font-black mb-1">Account</span>
+                        <div className="truncate text-sm font-semibold text-ink-strong">{session.user.name}</div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent/50 text-[11px] font-medium">
+                      <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent/50 text-[12px] font-medium py-2.5 px-4">
                         <Link to="/profile" className="flex items-center w-full">
-                          <User className="mr-2 h-3 w-3 opacity-70" />
+                          <User className="mr-3 h-4 w-4 opacity-70" />
                           Profile
                         </Link>
                       </DropdownMenuItem>
                       {session.user.role === "admin" && (
-                        <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent/50 text-[11px] font-medium">
+                        <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent/50 text-[12px] font-medium py-2.5 px-4">
                           <Link to="/admin/dashboard" className="flex items-center w-full">
-                            <LayoutDashboard className="mr-2 h-3 w-3 opacity-70" />
+                            <LayoutDashboard className="mr-3 h-4 w-4 opacity-70" />
                             Admin dashboard
                           </Link>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={() => logout.mutate()} className="cursor-pointer focus:bg-red-500/5 text-red-500 text-[11px] font-medium">
-                        <LogOut className="mr-2 h-3 w-3 opacity-70" />
+                      <DropdownMenuItem onSelect={() => logout.mutate()} className="cursor-pointer focus:bg-red-500/5 text-red-500 text-[12px] font-bold py-2.5 px-4">
+                        <LogOut className="mr-3 h-4 w-4 opacity-70" />
                         Sign out
                       </DropdownMenuItem>
                     </>
                   ) : (
                     authLinks.map((l) => (
-                      <DropdownMenuItem key={l.to} asChild className="cursor-pointer focus:bg-accent/50 text-[11px] font-medium">
+                      <DropdownMenuItem key={l.to} asChild className="cursor-pointer focus:bg-accent/50 text-[12px] font-medium py-2.5 px-4">
                         <Link to={l.to} className="w-full">{l.label}</Link>
                       </DropdownMenuItem>
                     ))
@@ -261,17 +255,17 @@ export function Header() {
 
               <Link 
                 to="/cart" 
-                className="flex h-9 px-2 items-center justify-center gap-2 rounded-md text-ink-default/60 hover:text-ink-strong hover:bg-black/5 transition-all outline-none"
+                className="flex h-10.5 px-4 items-center justify-center gap-2.5 rounded-full text-ink-default/70 hover:text-ink-strong hover:bg-black/5 transition-all outline-none"
               >
                 <div className="relative">
-                  <ShoppingBag className="h-4 w-4" />
+                  <ShoppingBag className="h-[18px] w-[18px]" />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-orange-glow px-1 text-[8px] font-black text-white">
+                    <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-orange-glow px-1.5 text-[9px] font-black text-white shadow-sm">
                       {cartCount}
                     </span>
                   )}
                 </div>
-                <span className="hidden lg:inline text-[12px] font-medium">Cart</span>
+                <span className="hidden lg:inline text-[13px] font-medium tracking-tight">Cart</span>
               </Link>
 
               <div className="hidden lg:flex items-center ml-2 border-l border-border/10 pl-3">

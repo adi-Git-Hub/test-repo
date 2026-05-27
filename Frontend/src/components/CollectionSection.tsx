@@ -84,11 +84,11 @@ export function CollectionSection() {
             viewport={viewportOnce}
             className="flex items-center gap-3 sm:gap-4 mb-3"
           >
-            <div className="h-px w-6 sm:w-8 bg-brown/20" />
-            <span className="text-micro-sm sm:text-micro-md tracking-luxe sm:tracking-editorial text-orange-glow uppercase font-bold">
-              PREVIEW COLLECTION
+            <div className="h-px w-6 sm:w-8 bg-[#c76600]/20" />
+            <span className="text-micro-sm sm:text-micro-md tracking-luxe sm:tracking-editorial text-[#c76600] uppercase font-bold">
+              Soliva SunWrap™
             </span>
-            <div className="h-px w-6 sm:w-8 bg-brown/20" />
+            <div className="h-px w-6 sm:w-8 bg-[#c76600]/20" />
           </motion.div>
 
           <motion.h2
@@ -96,10 +96,9 @@ export function CollectionSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={viewportOnce}
             transition={{ delay: 0.1 }}
-            className="font-display text-h4 md:text-h1 text-brown-deep leading-display-snug tracking-tight md:whitespace-nowrap"
+            className="font-display text-h4 md:text-h1 text-[#3a2a22] leading-display-snug tracking-tight md:whitespace-nowrap"
           >
-            Five editions.{" "}
-            <span className="italic text-orange-glow">One philosophy.</span>
+            One Product. <span className="italic text-[#c76600]">Five Colours.</span>
           </motion.h2>
 
           <motion.div
@@ -107,7 +106,7 @@ export function CollectionSection() {
             whileInView={{ scaleX: 1 }}
             viewport={viewportOnce}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-3 h-[2px] w-16 bg-gradient-to-r from-transparent via-brown/20 to-transparent"
+            className="mt-3 h-[2px] w-16 bg-gradient-to-r from-transparent via-[#3a2a22]/20 to-transparent"
           />
 
           <motion.p
@@ -115,10 +114,20 @@ export function CollectionSection() {
             whileInView={{ opacity: 1 }}
             viewport={viewportOnce}
             transition={{ delay: 0.4 }}
-            className="mt-3 max-w-md text-xs md:text-sm text-ink-muted leading-relaxed font-light italic"
+            className="mt-4 max-w-2xl text-xs md:text-sm text-[#7b6a5f] leading-relaxed font-light italic"
           >
-            Protective essentials, engineered for everyday Indian conditions.
+            Protective essentials thoughtfully designed for everyday exposure — supporting different routines, movement, and life stages.
           </motion.p>
+          
+          <motion.span
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={viewportOnce}
+            transition={{ delay: 0.5 }}
+            className="mt-4 font-mono text-[0.625rem] tracking-[0.2em] text-[#3a2a22]/60 uppercase font-bold"
+          >
+            Designed for commuting, outdoor exposure, travel, work, college, and everyday movement.
+          </motion.span>
         </div>
 
         {/* Collection Cards Grid */}
@@ -135,7 +144,7 @@ export function CollectionSection() {
             >
               <div className="relative flex flex-col h-full">
                 {/* Image Container */}
-                <div className="relative aspect-[4/5.2] overflow-hidden rounded-panel border border-line-soft bg-surface-glass backdrop-blur-medium transition-all duration-700 group-hover:-translate-y-1 group-hover:shadow-floating">
+                <div className="relative aspect-[4/5.2] overflow-hidden rounded-panel border border-[#3a2a22]/5 bg-white/40 backdrop-blur-medium transition-all duration-700 group-hover:-translate-y-1 group-hover:shadow-floating">
                   {/* Subtle Background Glow */}
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${p.tone} opacity-40 transition-opacity duration-700 group-hover:opacity-60`}
@@ -149,16 +158,13 @@ export function CollectionSection() {
                     }}
                   />
 
-                  {/* Cinematic Ground Shadow — grounds the product, removes floating-PNG feel */}
-                  <div className="absolute left-1/2 -translate-x-1/2 rounded-[50%] bg-brown-deep/30 blur-atmospheric pointer-events-none bottom-[14%] w-[52%] h-2.5" />
-
                   {/* Edition Badge */}
-                  <div className="absolute top-6 left-6 z-20 bg-surface-glass-strong backdrop-blur-subtle rounded-2xl p-2.5 shadow-sm">
+                  <div className="absolute top-6 left-6 z-20 bg-white/60 backdrop-blur-subtle rounded-2xl p-2.5 shadow-sm border border-[#3a2a22]/5">
                     <div className="flex flex-col gap-0.5 items-center">
-                      <span className="font-mono text-micro-xs tracking-cta text-brown-deep/60 uppercase font-bold">
-                        EDITION
+                      <span className="font-mono text-[0.5rem] tracking-[0.2em] text-[#3a2a22]/40 uppercase font-bold">
+                        VARIANT
                       </span>
-                      <span className="font-mono text-sm tracking-tighter text-brown-deep font-bold">
+                      <span className="font-mono text-sm tracking-tighter text-[#3a2a22] font-bold">
                         {p.id}
                       </span>
                     </div>
@@ -186,29 +192,20 @@ export function CollectionSection() {
                       }}
                     />
                   </div>
-
-                  {/* Grab Now CTA — visible on mobile, hover-revealed on md+ */}
-                  <div className="absolute bottom-6 inset-x-6 z-20 opacity-100 translate-y-0 transition-all duration-500 ease-out md:opacity-0 md:translate-y-3 md:group-hover:opacity-100 md:group-hover:translate-y-0">
-                    <div
-                      className="rounded-full py-2.5 px-5 text-center shadow-floating border border-white/30 transition-shadow duration-500 group-hover:shadow-glow"
-                      style={{
-                        background: "linear-gradient(135deg, rgba(255,255,255,0.55), rgba(255,255,255,0.3))",
-                        backdropFilter: "blur(16px) saturate(1.4)",
-                      }}
-                    >
-                      <span className="text-micro-sm tracking-cta text-brown-deep font-bold uppercase">
-                        Grab Now
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Content */}
-                <div className="mt-5 text-center md:text-left px-2 bg-surface-panel border border-line-hairline rounded-2xl p-4 backdrop-blur-subtle">
-                  <h3 className="font-display text-xl text-brown-deep tracking-tight mb-1.5 font-medium">
+                <div className="mt-5 text-center md:text-left px-2 bg-white/60 border border-[#3a2a22]/5 rounded-2xl p-5 backdrop-blur-subtle">
+                  <h3 className="font-display text-xl text-[#3a2a22] tracking-tight mb-2 font-medium">
                     {p.name}
                   </h3>
-                  <p className="text-micro-lg leading-relaxed text-ink-soft font-light line-clamp-2">
+                  <div className="space-y-1 mb-4">
+                     {i === 0 && <p className="text-[0.75rem] text-[#7b6a5f] font-light italic">☀️ Enhanced Protection</p>}
+                     {i === 1 && <p className="text-[0.75rem] text-[#7b6a5f] font-light italic">🌬 Breathable Comfort</p>}
+                     {i === 2 && <p className="text-[0.75rem] text-[#7b6a5f] font-light italic">🛵 Everyday Movement</p>}
+                     {i >= 3 && <p className="text-[0.75rem] text-[#7b6a5f] font-light italic">🛡 Full Coverage</p>}
+                  </div>
+                  <p className="text-[0.8125rem] leading-relaxed text-[#7b6a5f] font-light line-clamp-2">
                     {p.desc}
                   </p>
                 </div>
@@ -217,18 +214,25 @@ export function CollectionSection() {
           ))}
         </div>
 
+        {/* Fabric Philosophy Block */}
+        <div className="mt-16 sm:mt-24 p-10 sm:p-16 rounded-[4rem] bg-[#EAE2D8]/40 border border-[#3a2a22]/5 text-center max-w-4xl mx-auto">
+          <span className="font-mono text-[0.625rem] tracking-[0.4em] text-[#c76600] uppercase font-bold mb-6 block">Thoughtfully Selected Protection System</span>
+          <h4 className="font-display text-3xl md:text-4xl text-[#3a2a22] mb-8 leading-tight">Carefully selected materials designed to balance protection, comfort, and everyday wearability.</h4>
+          <p className="text-[1.125rem] text-[#7b6a5f] font-light leading-relaxed mb-12">Helping reduce environmental exposure while remaining breathable and comfortable for long outdoor hours.</p>
+          
+          <div className="flex flex-wrap justify-center gap-10">
+            {["Blush Pink", "Classic Beige", "Citrus Green", "Deep Blue"].map(c => (
+              <span key={c} className="font-mono text-[0.625rem] tracking-[0.2em] text-[#3a2a22] uppercase font-black">{c}</span>
+            ))}
+          </div>
+          <p className="mt-8 font-mono text-[0.5rem] tracking-[0.2em] text-[#a08f84] uppercase">Thoughtfully selected tones designed for everyday wearability.</p>
+        </div>
+
         {/* Bottom CTA Text */}
-        <div className="mt-10 sm:mt-14 text-center">
-          <motion.h4
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={viewportOnce}
-            className="font-display text-2xl sm:text-3xl md:text-4xl text-brown-deep leading-display-snug tracking-tight"
-          >
-            Thoughtfully layered.
-            <br />
-            <span className="italic text-orange-glow">Effortlessly worn.</span>
-          </motion.h4>
+        <div className="mt-16 text-center">
+          <button className="px-16 py-6 rounded-full bg-[#3a2a22] text-[#f7f3ee] font-mono text-[0.75rem] tracking-[0.25em] uppercase font-black transition-all duration-500 hover:bg-[#4a3a32] hover:-translate-y-1 shadow-editorial">
+            Explore Product →
+          </button>
         </div>
       </div>
 

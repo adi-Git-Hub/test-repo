@@ -5,9 +5,8 @@ import { UrbanStorytelling } from "@/components/UrbanStorytelling";
 import { CollectionSection } from "@/components/CollectionSection";
 import { CompareSection } from "@/components/CompareSection";
 import { VideoSection } from "@/components/VideoSection";
-import { FinalCTA } from "@/components/FinalCTA";
+import { BrandNarrative } from "@/components/BrandNarrative";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { useEffect } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -77,8 +76,7 @@ function Index() {
         <UrbanStorytelling />
         <CollectionSection />
         <CompareSection />
-        <FinalCTA />
-        <Footer />
+        <BrandNarrative />
       </main>
     </>
   );

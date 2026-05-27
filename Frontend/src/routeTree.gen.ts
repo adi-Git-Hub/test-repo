@@ -20,6 +20,7 @@ import { Route as PublicStoryRouteImport } from './routes/_public/story'
 import { Route as PublicSearchRouteImport } from './routes/_public/search'
 import { Route as PublicProfileRouteImport } from './routes/_public/profile'
 import { Route as PublicOrderConfirmedRouteImport } from './routes/_public/order-confirmed'
+import { Route as PublicIdentityRouteImport } from './routes/_public/identity'
 import { Route as PublicCollectionRouteImport } from './routes/_public/collection'
 import { Route as PublicCheckoutRouteImport } from './routes/_public/checkout'
 import { Route as PublicCartRouteImport } from './routes/_public/cart'
@@ -84,6 +85,11 @@ const PublicProfileRoute = PublicProfileRouteImport.update({
 const PublicOrderConfirmedRoute = PublicOrderConfirmedRouteImport.update({
   id: '/order-confirmed',
   path: '/order-confirmed',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicIdentityRoute = PublicIdentityRouteImport.update({
+  id: '/identity',
+  path: '/identity',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicCollectionRoute = PublicCollectionRouteImport.update({
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof PublicCartRoute
   '/checkout': typeof PublicCheckoutRoute
   '/collection': typeof PublicCollectionRoute
+  '/identity': typeof PublicIdentityRoute
   '/order-confirmed': typeof PublicOrderConfirmedRoute
   '/profile': typeof PublicProfileRoute
   '/search': typeof PublicSearchRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/cart': typeof PublicCartRoute
   '/checkout': typeof PublicCheckoutRoute
   '/collection': typeof PublicCollectionRoute
+  '/identity': typeof PublicIdentityRoute
   '/order-confirmed': typeof PublicOrderConfirmedRoute
   '/profile': typeof PublicProfileRoute
   '/search': typeof PublicSearchRoute
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/_public/cart': typeof PublicCartRoute
   '/_public/checkout': typeof PublicCheckoutRoute
   '/_public/collection': typeof PublicCollectionRoute
+  '/_public/identity': typeof PublicIdentityRoute
   '/_public/order-confirmed': typeof PublicOrderConfirmedRoute
   '/_public/profile': typeof PublicProfileRoute
   '/_public/search': typeof PublicSearchRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/collection'
+    | '/identity'
     | '/order-confirmed'
     | '/profile'
     | '/search'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/collection'
+    | '/identity'
     | '/order-confirmed'
     | '/profile'
     | '/search'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '/_public/cart'
     | '/_public/checkout'
     | '/_public/collection'
+    | '/_public/identity'
     | '/_public/order-confirmed'
     | '/_public/profile'
     | '/_public/search'
@@ -377,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/order-confirmed'
       fullPath: '/order-confirmed'
       preLoaderRoute: typeof PublicOrderConfirmedRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/identity': {
+      id: '/_public/identity'
+      path: '/identity'
+      fullPath: '/identity'
+      preLoaderRoute: typeof PublicIdentityRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/collection': {
@@ -490,6 +509,7 @@ interface PublicRouteRouteChildren {
   PublicCartRoute: typeof PublicCartRoute
   PublicCheckoutRoute: typeof PublicCheckoutRoute
   PublicCollectionRoute: typeof PublicCollectionRoute
+  PublicIdentityRoute: typeof PublicIdentityRoute
   PublicOrderConfirmedRoute: typeof PublicOrderConfirmedRoute
   PublicProfileRoute: typeof PublicProfileRoute
   PublicSearchRoute: typeof PublicSearchRoute
@@ -506,6 +526,7 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicCartRoute: PublicCartRoute,
   PublicCheckoutRoute: PublicCheckoutRoute,
   PublicCollectionRoute: PublicCollectionRoute,
+  PublicIdentityRoute: PublicIdentityRoute,
   PublicOrderConfirmedRoute: PublicOrderConfirmedRoute,
   PublicProfileRoute: PublicProfileRoute,
   PublicSearchRoute: PublicSearchRoute,

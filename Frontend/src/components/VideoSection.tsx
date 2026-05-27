@@ -96,53 +96,11 @@ export function VideoSection() {
 
   return (
     <>
-      {/* Amber luxury ribbon — vertical amber-fade gradient blends into Hero
-          above and VideoSection below (no hard borders), with bridge-strip
-          pseudo-layers (warm drift + white light streak) sweeping across as
-          glass shimmer. Glassmorphism via backdrop-blur. */}
-      <div className="bridge-strip relative z-0 w-full bg-gradient-to-b from-orange-glow/5 via-orange-glow/30 to-orange-glow/5 backdrop-blur-subtle">
-        <div className="relative z-10 flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 md:py-4">
-          <p className="font-display italic text-body-xs sm:text-sm md:text-base text-brown-deep tracking-nav sm:tracking-cta text-center">
-            {"Built for Indian streets. Refined for modern living."
-              .split(" ")
-              .map((word, i, arr) => (
-                <span
-                  key={i}
-                  className="punchline-word"
-                  style={{ animationDelay: `${i * 90}ms` }}
-                >
-                  {word}
-                  {i < arr.length - 1 ? " " : ""}
-                </span>
-              ))}
-          </p>
-        </div>
-      </div>
-
       <section ref={sectionRef} id="video-section" className="relative w-full h-screen overflow-hidden bg-transparent z-0">
-        {/* Cinematic atmospheric depth — soft amber drift + two floating glow
-            orbs that peek into the section corners while the video container
-            is scaled in (0.65 → 1.0). Hidden naturally once the video fills
-            the section. z-1 so video (z-10), glass card (z-20) and marquee
-            (z-30) all sit above. */}
         <div className="absolute inset-0 z-[1] pointer-events-none">
           <div className="video-ambient-drift" />
           <div className="video-orb video-orb-1 -top-32 -left-32 w-[32rem] h-[32rem]" />
           <div className="video-orb video-orb-2 -bottom-32 -right-32 w-[36rem] h-[36rem]" />
-        </div>
-
-        <div
-          ref={textContentRef}
-          className="absolute left-1/2 top-6 z-20 w-full max-w-3xl -translate-x-1/2 px-4 text-center pointer-events-none sm:top-8 sm:px-6 md:top-10"
-        >
-          <div className="inline-block w-full rounded-panel-sm border border-line-hairline bg-surface-panel p-5 backdrop-blur-medium shadow-sm sm:rounded-panel sm:p-8 md:rounded-panel-lg md:p-10">
-            <span className="mb-3 block text-micro-sm font-bold uppercase tracking-luxe text-orange-glow sm:mb-4 sm:text-micro-md sm:tracking-editorial">— SYSTEM CORE 01</span>
-            <h2
-              className="text-sculpted mt-1 font-display text-brown-deep leading-hero tracking-tight sm:mt-2 text-display-md"
-            >
-              Built For Real <span className="italic text-orange-glow">Daily Protection.</span>
-            </h2>
-          </div>
         </div>
 
         <div ref={videoContainerRef} className="absolute inset-0 z-10 w-full h-full overflow-hidden bg-black" style={{ willChange: "transform, border-radius" }}>

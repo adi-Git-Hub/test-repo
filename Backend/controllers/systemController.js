@@ -28,10 +28,12 @@ exports.getSystemHealth = catchAsyncErrors(async (req, res, next) => {
     queues: {},
   };
 
-  // Get job counts for all queues
-  for (const queue of queues) {
-    const counts = await queue.getJobCounts('wait', 'completed', 'failed', 'delayed', 'active');
-    health.queues[queue.name] = counts;
+  // Get job counts for all queues (Only if Redis is ready)
+  if (health.services.redis === 'up') {
+    for (const queue of queues) {
+      const counts = await queue.getJobCounts('wait', 'completed', 'failed', 'delayed', 'active');
+      health.queues[queue.name] = counts;
+    }
   }
 
   // Determine overall status

@@ -1,652 +1,743 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { viewportOnce, viewportOnceEarly } from "@/design-system";
+import { motion, AnimatePresence, useScroll } from "framer-motion";
+import { viewportOnce, viewportOnceEarly, ease, useIsMobile } from "@/design-system";
 import { useCart } from "@/features/cart/hooks/useCart";
+import { Plus, Check, Wind, Shield, Activity, Zap } from "lucide-react";
+import { AtmosphericEngine, InteractiveCard3D } from "@/components/AtmosphericEngine";
 
 export const Route = createFileRoute("/_public/collection")({
   component: CollectionRoute,
 });
 
-type Product = {
-  id: string;
-  slug: string;
-  name: string;
-  line: string;
-  description: string;
-  tags: readonly string[];
-  features: readonly string[];
-  trust: string;
-  badge: string;
-  image: string;
-  tone: string;
-  glow: string;
-  priceCents: number;
-  originalPriceCents: number;
-};
-
-const products: readonly Product[] = [
+const variants = [
   {
-    id: "01",
-    slug: "soliva-airshield-wrap",
-    name: "Soliva AirShield Wrap",
-    line: "Sculpted coverage. Silent confidence.",
-    description:
-      "Dual-layer architecture that moves with your silhouette, deflecting harsh UV while staying invisible in wear.",
-    tags: ["UV Defense", "Breathable", "Full Coverage"],
-    features: ["Heat reflective", "Airflow engineered", "Urban ready"],
-    trust: "Designed for Indian Heat",
-    badge: "Most Selected",
-    image: "/new_blue.webp",
+    id: "arctic-blue",
+    name: "Arctic Blue",
+    image: "/variant_blue.webp",
     tone: "from-[#EEF2FA] via-[#DBEAFE] to-[#C7D9F5]",
     glow: "rgba(147, 180, 235, 0.2)",
-    priceCents: 79900,
-    originalPriceCents: 120000,
+    hex: "#DBEAFE",
   },
   {
-    id: "02",
-    slug: "soliva-urban-veil",
-    name: "Soliva Urban Veil",
-    line: "City-weight protection. Zero compromise.",
-    description:
-      "Lighter weave that shields without trapping heat, designed for eight-hour days in motion.",
-    tags: ["UV Defense", "Lightweight", "Daily Wear"],
-    features: ["Silent coverage", "Thermal adaptive", "All-day wear"],
-    trust: "Precision Layered Comfort",
-    badge: "Urban Essential",
-    image: "/new_gray.webp",
-    tone: "from-[#F5F4F2] via-[#EDEBE8] to-[#E0DEDA]",
-    glow: "rgba(180, 175, 168, 0.18)",
-    priceCents: 79900,
-    originalPriceCents: 120000,
+    id: "dusty-olive",
+    name: "Dusty Olive",
+    image: "/variant_olive.webp",
+    tone: "from-[#F5F6F2] via-[#E8EAE0] to-[#DDE0D2]",
+    glow: "rgba(160, 170, 140, 0.18)",
+    hex: "#E8EAE0",
   },
   {
-    id: "03",
-    slug: "soliva-heatguard",
-    name: "Soliva HeatGuard",
-    line: "Thermal intelligence. All-day calm.",
-    description:
-      "Heat-reflective fabric that keeps skin cool during the harshest afternoon hours, without adding bulk.",
-    tags: ["Heat Shield", "UV Defense", "All-Day"],
-    features: ["Peak-hour shield", "Lightweight core", "Moisture wicking"],
-    trust: "Crafted for Daily Exposure",
-    badge: "Summer Essential",
-    image: "/new_lime.webp",
+    id: "leaf-lime",
+    name: "Leaf Lime",
+    image: "/variant_lime.webp",
     tone: "from-[#F0FAF3] via-[#DCFCE7] to-[#C5F0D3]",
     glow: "rgba(134, 220, 160, 0.18)",
-    priceCents: 79900,
-    originalPriceCents: 120000,
+    hex: "#DCFCE7",
   },
   {
-    id: "04",
-    slug: "soliva-motioncover",
-    name: "Soliva MotionCover",
-    line: "Moves with you. Stays in place.",
-    description:
-      "Adaptive stretch-soft fabric that holds form through every ride, walk, and commute.",
-    tags: ["UV Defense", "Stretch-Soft", "Indian Climate"],
-    features: ["Adaptive stretch", "Zero-slip fit", "Commute-proof"],
-    trust: "Premium Thermal Fabric",
-    badge: "Active Pick",
-    image: "/pink.webp",
+    id: "petal-pink",
+    name: "Petal Pink",
+    image: "/variant_pink.webp",
     tone: "from-[#FBF0F3] via-[#FCE7F3] to-[#F5D0E2]",
     glow: "rgba(244, 180, 210, 0.18)",
-    priceCents: 79900,
-    originalPriceCents: 120000,
+    hex: "#FCE7F3",
   },
   {
-    id: "05",
-    slug: "soliva-airlite-shield",
-    name: "Soliva AirLite Shield",
-    line: "Barely there. Completely covered.",
-    description:
-      "Featherweight fabric that disappears on skin while delivering uncompromising protection.",
-    tags: ["Ultra-Light", "UV Defense", "Breathable"],
-    features: ["Featherweight", "Second-skin feel", "Invisible wear"],
-    trust: "Engineered Breathability",
-    badge: "Lightweight Pick",
-    image: "/new_brown.webp",
+    id: "golden-sand",
+    name: "Golden Sand",
+    image: "/variant_golden.webp",
     tone: "from-[#F7F1EB] via-[#EDE0D0] to-[#DCCCB5]",
     glow: "rgba(190, 160, 120, 0.18)",
-    priceCents: 79900,
-    originalPriceCents: 120000,
+    hex: "#EDE0D0",
   },
 ] as const;
 
-const featured = products[0];
-const ease = [0.21, 0.47, 0.32, 0.98] as const;
+const lifestyleImages = ["/1.webp", "/2.webp"];
 
 function CollectionRoute() {
+  const [activeVariant, setActiveVariant] = useState(variants[0]);
+  const [activeLifestyle, setActiveLifestyle] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const cart = useCart();
+  const [addedToCart, setAddedToCart] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveLifestyle((prev) => (prev + 1) % lifestyleImages.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleAddToCart = () => {
+    cart.add({
+      productId: "soliva-sunwrap",
+      slug: "soliva-sunwrap",
+      name: `Soliva SunWrap™ - ${activeVariant.name}`,
+      image: activeVariant.image,
+      priceCents: 79900,
+      currency: "INR",
+      quantity: quantity,
+    });
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
+  };
+
   return (
-    <div className="relative w-full bg-[#FAF7F3]">
-      {/* ═══ Ambient atmosphere ═══ */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-[60%] bg-[radial-gradient(ellipse_at_30%_20%,rgba(245,130,13,0.035),transparent_55%)]" />
-        <div className="absolute bottom-0 right-0 w-full h-[60%] bg-[radial-gradient(ellipse_at_75%_80%,rgba(243,236,226,0.7),transparent_50%)]" />
-      </div>
+    <div ref={containerRef} className="relative w-full bg-[#FAF7F3] overflow-x-hidden">
+      {/* Cinematic Background Layer */}
+      <AtmosphericEngine type="story" className="opacity-20" />
 
-      {/* ═══ SECTION 1: Editorial Hero ═══ */}
-      <section className="relative">
-        <div className="mx-auto max-w-[68rem] px-5 sm:px-8 pt-20 sm:pt-28 md:pt-32 pb-10 sm:pb-14">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={viewportOnce}
-            transition={{ duration: 0.7, ease }}
-            className="flex items-center gap-3"
-          >
-            <span className="block h-px w-7 bg-[#3a2a22]/15" />
-            <span className="font-mono text-[0.5625rem] tracking-[0.4em] text-[#c76600] uppercase font-semibold">
-              SS / 26 &middot; Volume 01
-            </span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={viewportOnce}
-            transition={{ delay: 0.06, duration: 0.9, ease }}
-            className="mt-4 font-display tracking-tight leading-[1.05] text-[#3a2a22]"
-            style={{ fontSize: "clamp(2.25rem, 7vw, 3.75rem)" }}
-          >
-            The Collection
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={viewportOnce}
-            transition={{ delay: 0.18, duration: 0.8 }}
-            className="mt-4 max-w-md text-[0.875rem] sm:text-[0.9375rem] text-[#7b6a5f] font-light leading-relaxed"
-          >
-            Five editions, engineered for daily exposure. Breathable,
-            intentional, made for Indian conditions.
-          </motion.p>
-
-          {/* Stats strip */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={viewportOnce}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2"
-          >
-            {[
-              { val: "5", label: "Editions" },
-              { val: "UPF 50+", label: "Protection" },
-              { val: "180g", label: "Avg Weight" },
-              { val: "42°C", label: "Heat Tested" },
-            ].map((s) => (
-              <div key={s.label} className="flex items-baseline gap-1.5">
-                <span className="font-display text-[0.9375rem] text-[#3a2a22]/75 tracking-tight">
-                  {s.val}
-                </span>
-                <span className="font-mono text-[0.4375rem] tracking-[0.2em] text-[#7b6a5f]/45 uppercase">
-                  {s.label}
-                </span>
-              </div>
-            ))}
-          </motion.div>
-
-          <motion.div
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={viewportOnce}
-            transition={{ delay: 0.35, duration: 0.8 }}
-            className="mt-6 h-px w-16 origin-left bg-gradient-to-r from-[#3a2a22]/20 to-transparent"
-          />
-
-          <div className="mt-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <span className="block h-px w-4 bg-[#3a2a22]/12" />
-              <span className="font-mono text-[0.5rem] tracking-[0.3em] text-[#3a2a22]/55 uppercase font-semibold">
-                The Editions
-              </span>
-            </div>
-            <p className="max-w-xs text-[0.75rem] text-[#a08f84] font-light sm:text-right">
-              Each designed for a different rhythm of daily exposure.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ SECTION 2: Product Grid ═══ */}
-      <section className="relative">
-        <div className="mx-auto max-w-[68rem] px-5 sm:px-8 pb-12 sm:pb-16">
-          <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((p, i) => (
-              <ProductCard key={p.id} product={p} index={i} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ SECTION 3: Fabric Technology Strip ═══ */}
-      <section className="relative py-12 sm:py-16">
-        <div className="mx-auto max-w-[68rem] px-5 sm:px-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-[#3a2a22]/[0.06] rounded-2xl overflow-hidden border border-[#3a2a22]/[0.06]">
-            {[
-              { label: "UV Shield", val: "98%" },
-              { label: "Breathability", val: "94%" },
-              { label: "Weight", val: "180g" },
-              { label: "Climate", val: "Indian" },
-              { label: "Coverage", val: "Full" },
-              { label: "Layers", val: "Dual" },
-            ].map((item, i) => (
-              <motion.div
-                key={item.label}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={viewportOnceEarly}
-                transition={{ delay: Math.min(i * 0.04, 0.2), duration: 0.6, ease }}
-                className="bg-white/70 px-4 py-5 text-center"
-              >
-                <div className="font-display text-[1.125rem] text-[#3a2a22] tracking-tight font-medium">
-                  {item.val}
-                </div>
-                <span className="font-mono text-[0.4375rem] tracking-[0.25em] text-[#7b6a5f]/55 uppercase mt-1 block">
-                  {item.label}
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ SECTION 4: Featured Flagship Edition ═══ */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#F3EDE5] via-[#FAF7F3] to-[#EDE6DC]" />
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-[radial-gradient(ellipse_at_70%_30%,rgba(147,180,235,0.06),transparent_55%)]" />
-        </div>
-
-        <div className="relative mx-auto max-w-[68rem] px-5 sm:px-8 py-14 sm:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+      {/* ═══ SECTION 1: THE COLLECTION (Editorial Intro) ═══ */}
+      <section className="relative min-h-screen pt-32 pb-[120px] flex items-center overflow-hidden">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-8 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            {/* LEFT: Single Premium Lifestyle Image */}
             <motion.div
-              initial={{ opacity: 0, x: -24 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={viewportOnce}
-              transition={{ duration: 0.9, ease }}
-              className="relative"
+              transition={{ duration: 1.0, ease: ease.smooth }}
+              className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-soft group will-change-transform"
             >
-              <div className="relative aspect-[5/6] max-w-[400px] mx-auto lg:mx-0 rounded-[1.75rem] overflow-hidden border border-[#3a2a22]/[0.05]">
-                <div className={`absolute inset-0 bg-gradient-to-br ${featured.tone} opacity-85`} />
-                <div
-                  className="absolute inset-0 opacity-40"
-                  style={{ background: `radial-gradient(circle at 50% 40%, ${featured.glow}, transparent 60%)` }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center p-10 sm:p-14">
-                  <img
-                    src={featured.image}
-                    alt={featured.name}
-                    className="w-full h-full object-contain drop-shadow-[0_10px_28px_rgba(58,42,34,0.14)]"
-                  />
-                </div>
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-[8%] w-[50%] h-2.5 rounded-[50%] bg-[#3a2a22]/12 blur-[10px]" />
-              </div>
-
-              <div className="absolute top-5 left-5 lg:left-auto lg:right-auto bg-white/55 backdrop-blur-[6px] rounded-xl px-3 py-2 border border-white/25">
-                <span className="block font-mono text-[0.4375rem] tracking-[0.25em] text-[#3a2a22]/45 uppercase font-semibold">Edition</span>
-                <span className="block font-mono text-sm tracking-tight text-[#3a2a22] font-bold mt-px">01</span>
-              </div>
+              <img
+                src="/hero-image.webp" 
+                alt="Soliva Summer Movement"
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#3a2a22]/20 via-transparent to-transparent" />
+              <div className="absolute inset-4 border border-white/20 rounded-[2.5rem] pointer-events-none" />
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 24 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={viewportOnce}
-              transition={{ delay: 0.1, duration: 0.9, ease }}
-              className="flex flex-col justify-center"
-            >
-              <span className="font-mono text-[0.4375rem] tracking-[0.35em] text-[#c76600] uppercase font-semibold">
-                Flagship Edition
-              </span>
-              <h2
-                className="mt-3 font-display text-[#3a2a22] tracking-tight leading-[1.1]"
-                style={{ fontSize: "clamp(1.625rem, 3.5vw, 2.5rem)" }}
+            {/* RIGHT: Rich Storytelling Content */}
+            <div className="flex flex-col text-left">
+              <motion.span
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={viewportOnce}
+                transition={{ delay: 0.1 }}
+                className="font-mono text-[0.625rem] tracking-[0.4em] text-[#c76600] uppercase font-bold mb-8 block"
               >
-                {featured.name}
-              </h2>
-              <p className="mt-1.5 text-[0.8125rem] text-[#7b6a5f]/75 font-light italic">
-                {featured.line}
-              </p>
+                SS/26 VOLUME 01
+              </motion.span>
+              
+              <motion.h1
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={viewportOnce}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="font-display text-[#3a2a22] leading-[1.05] tracking-tight mb-10"
+                style={{ fontSize: "clamp(3rem, 10vw, 6rem)" }}
+              >
+                The Summer <br />
+                <span className="italic text-[#c76600]/80 text-shadow-sm">Movement.</span>
+              </motion.h1>
 
-              <div className="mt-5 h-px w-10 bg-[#3a2a22]/10" />
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={viewportOnce}
+                transition={{ delay: 0.3, duration: 0.8 }}
+                className="text-[1.125rem] text-[#7b6a5f] font-light leading-relaxed max-w-xl mb-12"
+              >
+                Thoughtfully designed for movement through Indian summers — breathable layers built for everyday comfort, exposure, and motion.
+              </motion.p>
 
-              <p className="mt-5 text-[0.8125rem] text-[#7b6a5f] font-light leading-[1.65] max-w-sm">
-                {featured.description}
-              </p>
-
-              <div className="mt-6 flex flex-col gap-2">
-                {featured.features.map((f) => (
-                  <div key={f} className="flex items-center gap-2.5">
-                    <span className="w-1 h-1 rounded-full bg-[#c76600]/50" />
-                    <span className="font-mono text-[0.625rem] tracking-[0.12em] text-[#3a2a22]/60 uppercase">{f}</span>
-                  </div>
+              {/* Structured Feature Breakdown */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-12">
+                {[
+                  { label: "BREATHABLE COMFORT", desc: "Dual-layer airflow system designed to release heat while shielding skin." },
+                  { label: "URBAN UTILITY", desc: "Engineered for 60kmph motion, city commutes, and everyday routines." },
+                  { label: "HEAT-READY WEAR", desc: "Lightweight fabrics tested in 45°C Nagpur summer conditions." },
+                  { label: "DAILY EXPOSURE", desc: "Zero-gap protection calibrated for long outdoor exposure hours." },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={viewportOnceEarly}
+                    transition={{ delay: 0.4 + i * 0.05 }}
+                    className="flex flex-col gap-2"
+                  >
+                    <span className="font-mono text-[0.5625rem] tracking-[0.2em] text-[#3a2a22] uppercase font-black">{item.label}</span>
+                    <p className="text-[0.875rem] text-[#a08f84] font-light leading-snug">{item.desc}</p>
+                  </motion.div>
                 ))}
               </div>
 
-              <div className="mt-6 flex items-baseline gap-2.5">
-                <span className="font-mono text-xl text-[#3a2a22] tracking-tight font-medium">&#8377;799</span>
-                <span className="font-mono text-[0.75rem] text-[#a08f84]/50 line-through">&#8377;1,200</span>
-                <span className="font-mono text-[0.4375rem] tracking-[0.2em] text-[#c76600] uppercase font-semibold bg-[#c76600]/[0.06] px-2 py-0.5 rounded-full">
-                  Launch Offer
-                </span>
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={viewportOnce}
+                transition={{ delay: 0.6 }}
+                className="flex gap-4"
+              >
+                <button className="px-12 py-5 rounded-full bg-[#3a2a22] text-[#f7f3ee] font-mono text-[0.625rem] tracking-[0.25em] uppercase font-bold transition-all duration-300 hover:bg-[#4a3a32] hover:-translate-y-0.5">
+                  Explore Collection
+                </button>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SECTION 2: FLAGSHIP ECOSYSTEM (Luxury Redesign) ═══ */}
+      <section className="relative py-24 bg-white/40">
+        <div className="mx-auto max-w-[1440px] px-6 sm:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24 items-start">
+            
+            {/* LEFT SIDE: Premium Product Gallery */}
+            <div className="lg:col-span-7 flex flex-row gap-6">
+              {/* Vertical Thumbnail Column - Amazon Style */}
+              <div className="hidden md:flex flex-col gap-4 w-20 shrink-0 sticky top-32">
+                {variants.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => setActiveVariant(v)}
+                    className={`relative aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all duration-400 group ${
+                      activeVariant.id === v.id 
+                        ? "border-[#c76600] ring-4 ring-[#c76600]/5" 
+                        : "border-transparent opacity-50 hover:opacity-100 hover:border-[#3a2a22]/20"
+                    }`}
+                  >
+                    <img src={v.image} className="w-full h-full object-cover" alt={v.name} />
+                  </button>
+                ))}
               </div>
 
-              <Link
-                to="/products/$slug"
-                params={{ slug: featured.slug }}
-                className="mt-6 inline-flex items-center justify-center w-full sm:w-auto px-7 py-3 rounded-full bg-[#3a2a22] text-[#f7f3ee] font-mono text-[0.625rem] tracking-[0.18em] uppercase font-semibold transition-all duration-500 hover:bg-[#4a3a32] hover:shadow-[0_6px_20px_rgba(58,42,34,0.18)]"
+              {/* Large Main Product Image - Unboxed Editorial */}
+              <div className="flex-1 relative">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeVariant.id}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.6, ease: ease.smooth }}
+                    className="relative aspect-[4/5] w-full group cursor-zoom-in"
+                  >
+                    <img
+                      src={activeVariant.image}
+                      alt={activeVariant.name}
+                      className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
+                    />
+                    {/* Subtle Shadow to ground the product */}
+                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-2/3 h-8 bg-black/5 blur-2xl rounded-full -z-10" />
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Mobile Thumbnails */}
+                <div className="flex md:hidden gap-3 mt-6 overflow-x-auto pb-2 scrollbar-hide">
+                  {variants.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => setActiveVariant(v)}
+                      className={`relative w-16 h-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
+                        activeVariant.id === v.id ? "border-[#c76600]" : "border-transparent opacity-60"
+                      }`}
+                    >
+                      <img src={v.image} className="w-full h-full object-cover" alt={v.name} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT SIDE: Product Information Hierarchy */}
+            <div className="lg:col-span-5 flex flex-col pt-2">
+              <div className="space-y-10">
+                {/* 1. Header & Title */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-[0.625rem] tracking-[0.4em] text-[#c76600] uppercase font-bold">Flagship Series</span>
+                    <div className="h-px w-8 bg-[#c76600]/30" />
+                  </div>
+                  <h2 className="font-display text-[#3a2a22] leading-[1.1] tracking-tight uppercase" style={{ fontSize: "clamp(2.5rem, 4vw, 3.5rem)" }}>
+                    Soliva <span className="italic font-light text-[#c76600]/90">SunWrap™</span>
+                  </h2>
+                </div>
+
+                {/* 2. Price Section */}
+                <div className="flex items-center gap-6 border-y border-[#3a2a22]/5 py-6">
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-mono text-4xl text-[#3a2a22] font-semibold tracking-tighter">₹799</span>
+                    <span className="font-mono text-lg text-[#a08f84] line-through opacity-60">₹1,200</span>
+                  </div>
+                  <div className="px-4 py-1.5 rounded-full bg-[#c76600] text-white font-mono text-[0.5625rem] uppercase font-black tracking-widest shadow-sm">
+                    Launch Edition
+                  </div>
+                </div>
+
+                {/* 3. Trust Row - Clean Icons/Text */}
+                <div className="flex items-center justify-between px-1">
+                  {[
+                    { label: "UPF 50+ Certified", icon: Shield },
+                    { label: "Breathable Wear", icon: Wind },
+                    { label: "Indian Heat Ready", icon: Activity }
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <item.icon size={12} className="text-[#c76600]" />
+                      <span className="font-mono text-[0.5625rem] tracking-widest uppercase font-bold text-[#7b6a5f]">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 4. Description */}
+                <p className="text-[1.125rem] text-[#7b6a5f] font-light leading-relaxed">
+                  A breathable textile shield engineered for urban movement. The SunWrap™ silhouette adapts to your form, deflecting UV while maintaining constant airflow through calibrated ventilation zones.
+                </p>
+
+                {/* 5. Usage Chips */}
+                <div className="space-y-4">
+                  <span className="font-mono text-[0.5625rem] tracking-[0.2em] text-[#a08f84] uppercase font-black">Daily Context</span>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Women Commuters",
+                      "College Routines",
+                      "Long Outdoor Hours",
+                      "Urban Exposure",
+                      "Travel",
+                      "Daily Movement"
+                    ].map((pill) => (
+                      <span key={pill} className="px-4 py-2.5 rounded-xl border border-[#3a2a22]/10 bg-[#3a2a22]/[0.02] text-[0.75rem] text-[#7b6a5f] font-medium tracking-tight hover:bg-white hover:shadow-sm transition-all cursor-default">
+                        {pill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 6. Feature Grid - 2 Column Cards */}
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { icon: Wind, title: "Ventilation", val: "High Airflow" },
+                    { icon: Shield, title: "UV Guard", val: "Calibrated" },
+                    { icon: Activity, title: "Stability", val: "60kmph Fit" },
+                    { icon: Zap, title: "Weight", val: "Ultra-Light" },
+                  ].map((f, i) => (
+                    <div key={i} className="flex flex-col gap-3 p-5 rounded-3xl bg-[#3a2a22]/[0.02] border border-[#3a2a22]/[0.04] hover:bg-white hover:shadow-soft transition-all duration-500">
+                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                        <f.icon size={16} className="text-[#c76600]" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-mono text-[0.5rem] tracking-[0.2em] text-[#a08f84] uppercase font-bold mb-0.5">{f.title}</span>
+                        <span className="text-[0.8125rem] text-[#3a2a22] font-semibold">{f.val}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 7. Buying Experience */}
+                <div className="space-y-6 pt-6">
+                  {/* Quantity Selector */}
+                  <div className="flex items-center gap-6">
+                    <span className="font-mono text-[0.5625rem] tracking-[0.2em] text-[#a08f84] uppercase font-black">Quantity</span>
+                    <div className="flex items-center border border-[#3a2a22]/10 rounded-full bg-white px-2">
+                      <button 
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="w-10 h-10 flex items-center justify-center text-[#7b6a5f] hover:text-[#3a2a22] transition-colors"
+                      >
+                        -
+                      </button>
+                      <span className="w-8 text-center font-mono text-sm font-bold text-[#3a2a22]">{quantity}</span>
+                      <button 
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="w-10 h-10 flex items-center justify-center text-[#7b6a5f] hover:text-[#3a2a22] transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* CTA Buttons */}
+                  <div className="flex flex-col gap-4">
+                    <div className="flex gap-4">
+                      <button
+                        onClick={handleAddToCart}
+                        className={`flex-1 py-5 rounded-full font-mono text-[0.6875rem] tracking-[0.25em] uppercase font-black transition-all duration-500 flex items-center justify-center gap-3 ${
+                          addedToCart
+                            ? "bg-[#2d6b3f] text-white"
+                            : "bg-[#3a2a22] text-[#f7f3ee] hover:bg-[#4a3a32] shadow-lg shadow-[#3a2a22]/10"
+                        }`}
+                      >
+                        {addedToCart ? (
+                          <>
+                            <Check size={16} strokeWidth={3} /> Added
+                          </>
+                        ) : (
+                          <>
+                            <Plus size={16} strokeWidth={3} /> Add To Cart
+                          </>
+                        )}
+                      </button>
+                      <button className="flex-1 py-5 rounded-full bg-[#c76600] text-white font-mono text-[0.6875rem] tracking-[0.25em] uppercase font-black transition-all duration-500 hover:bg-[#d87a1a] shadow-lg shadow-[#c76600]/20">
+                        Buy Now
+                      </button>
+                    </div>
+
+                    <a 
+                      href="https://wa.me/917350640608" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full py-4 rounded-full border border-[#3a2a22]/10 bg-white flex items-center justify-center gap-3 font-mono text-[0.625rem] tracking-[0.2em] uppercase font-bold text-[#3a2a22] hover:bg-[#3a2a22]/[0.02] transition-all"
+                    >
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" className="w-4 h-4 opacity-70" />
+                      Quick Order on WhatsApp
+                    </a>
+                  </div>
+
+                  <p className="text-center font-mono text-[0.5rem] tracking-[0.3em] text-[#a08f84] uppercase font-bold opacity-40">
+                    Complimentary Shipping · Secured Transactions
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SECTION 3: CINEMATIC INTERMISSION (SS/26 · VOLUME 01) ═══ */}
+      <section className="relative min-h-[60vh] py-[100px] flex items-center overflow-hidden bg-[#EAE2D8]">
+        {/* Simplified Atmospheric Base */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+        
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-8 w-full relative z-10">
+          <div className="flex flex-col lg:flex-row gap-24 items-center">
+            {/* LEFT: 60% Content */}
+            <div className="w-full lg:w-[60%] flex flex-col items-start text-left">
+              <motion.span
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={viewportOnce}
+                className="font-mono text-[0.625rem] tracking-[0.6em] text-[#3a2a22]/50 uppercase font-black mb-8 block"
               >
-                View Flagship Edition
-              </Link>
+                SS/26 · VOLUME 01
+              </motion.span>
+              
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={viewportOnce}
+                transition={{ delay: 0.1, duration: 0.8 }}
+                className="font-display text-[#3a2a22] leading-[1.1] tracking-tight mb-10"
+                style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)" }}
+              >
+                Protection engineered <br />
+                <span className="italic text-[#c76600]/90">for Indian movement.</span>
+              </motion.h2>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={viewportOnce}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="text-[1.125rem] text-[#5c4d44] font-light leading-relaxed max-w-lg mb-12"
+              >
+                Thoughtfully designed around the realities of Indian summers, movement, sunlight, and urban exposure.
+              </motion.p>
+            </div>
+
+            {/* RIGHT: 40% Video Area */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={viewportOnce}
+              transition={{ delay: 0.2, duration: 1.0 }}
+              className="w-full lg:w-[40%] relative will-change-transform"
+            >
+              <div className="relative h-[400px] lg:h-[480px] w-full rounded-[2.5rem] lg:rounded-[3rem] overflow-hidden shadow-lg border border-[#3a2a22]/5 bg-black/5">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover brightness-[0.98] will-change-transform"
+                  style={{ transform: "translateZ(0)" }}
+                >
+                  <source src="/intermission_optimized.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#3a2a22]/20 via-transparent to-transparent pointer-events-none opacity-40" />
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ═══ SECTION 5: Engineering Details ═══ */}
-      <section className="relative py-12 sm:py-18">
-        <div className="mx-auto max-w-[68rem] px-5 sm:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={viewportOnce}
-            transition={{ duration: 0.7, ease }}
-            className="text-center mb-10 sm:mb-14"
-          >
-            <span className="font-mono text-[0.4375rem] tracking-[0.35em] text-[#c76600] uppercase font-semibold">
-              Engineered Details
-            </span>
-            <h3
-              className="mt-3 font-display text-[#3a2a22] tracking-tight leading-[1.15]"
-              style={{ fontSize: "clamp(1.375rem, 3.5vw, 2rem)" }}
-            >
-              What makes every edition{" "}
-              <span className="italic text-[#c76600]/75">worth wearing.</span>
-            </h3>
-          </motion.div>
+      {/* ═══ SECTION 4: MOVEMENT STORY (Refined Editorial Framing) ═══ */}
+      <section className="relative py-[120px] overflow-hidden">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-8">
+          <div className="flex flex-col lg:flex-row gap-20 items-center">
+            {/* LEFT CONTENT: 45% */}
+            <div className="w-full lg:w-[45%] flex flex-col items-start text-left">
+              <motion.span
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                className="font-mono text-[0.625rem] tracking-[0.4em] text-[#c76600] uppercase font-bold mb-6"
+              >
+                MOVEMENT STORY
+              </motion.span>
+              <h2 className="font-display text-[#3a2a22] tracking-tight leading-[1.1] mb-8" style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)" }}>
+                Protection Designed <br /> For Daily Motion
+              </h2>
+              <p className="text-[1.125rem] text-[#7b6a5f] font-light leading-relaxed mb-10 max-w-md">
+                Built for movement through heat, travel, and everyday urban exposure — thoughtfully designed to move naturally with life.
+              </p>
+              
+              <div className="space-y-6 mb-12">
+                {[
+                  "Crafted For Indian Summers",
+                  "Breathable Everyday Wear",
+                  "Designed For Long Outdoor Hours",
+                  "Quiet Comfort In Motion",
+                ].map((item, i) => (
+                  <motion.div
+                    key={item}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={viewportOnceEarly}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex items-center gap-4 group"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#c76600]/30 transition-all duration-300 group-hover:scale-125 group-hover:bg-[#c76600]" />
+                    <span className="text-[0.9375rem] text-[#3a2a22]/80 font-medium tracking-tight">
+                      {item}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[#3a2a22]/[0.07] rounded-2xl overflow-hidden border border-[#3a2a22]/[0.07]">
+            {/* RIGHT SLIDER: 55% (Refined Editorial Portrait Frame) */}
+            <div className="w-full lg:w-[55%] flex flex-col items-center lg:items-end gap-10">
+              <div className="w-full max-w-[520px]">
+                <div className="relative aspect-[4/5] rounded-[4rem] overflow-hidden shadow-editorial border border-[#3a2a22]/5 bg-white will-change-transform">
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={activeLifestyle}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.8, ease: "linear" }}
+                      src={lifestyleImages[activeLifestyle]}
+                      alt="Soliva Lifestyle Movement"
+                      className="w-full h-full object-cover grayscale-[0.05]"
+                      style={{ objectPosition: "center center", transform: "translateZ(0)" }}
+                    />
+                  </AnimatePresence>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#3a2a22]/15 via-transparent to-transparent opacity-40" />
+                </div>
+              </div>
+
+              {/* Luxury Editorial Slider Control */}
+              <div className="flex items-center justify-between w-full max-w-[520px] px-10">
+                <div className="flex gap-2 items-center">
+                  <span className="font-mono text-[0.625rem] text-[#3a2a22]/40 font-bold uppercase tracking-widest">
+                    SCENE 0{activeLifestyle + 1}
+                  </span>
+                  <div className="w-12 h-px bg-[#3a2a22]/10 mx-2" />
+                  <span className="font-mono text-[0.625rem] text-[#3a2a22]/20 font-bold uppercase tracking-widest">
+                    TOTAL 0{lifestyleImages.length}
+                  </span>
+                </div>
+
+                <div className="flex gap-4">
+                  {lifestyleImages.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveLifestyle(i)}
+                      className="group relative py-4"
+                    >
+                      <div className="h-[2px] w-12 bg-[#3a2a22]/5 overflow-hidden rounded-full">
+                        <motion.div 
+                          className="h-full bg-[#c76600]"
+                          initial={false}
+                          animate={{ 
+                            width: activeLifestyle === i ? "100%" : "0%" 
+                          }}
+                          transition={{ duration: 0.6 }}
+                        />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SECTION 5: REAL WORLD UTILITY (Upgraded with 3D Depth) ═══ */}
+      <section className="relative py-[120px] bg-[#FAF7F3] overflow-hidden">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-8 relative z-10">
+          <div className="text-center mb-24">
+            <motion.h2 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="font-display text-[#3a2a22] tracking-tight leading-[1.1]" style={{ fontSize: "clamp(2.5rem, 7vw, 4.5rem)" }}>
+              Designed Around <span className="italic">Everyday</span> Movement
+            </motion.h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {[
-              { label: "UV Shield", value: "Advanced", note: "Multi-layer deflection for harsh Indian sun" },
-              { label: "Breathability", value: "Engineered", note: "Airflow channels that prevent heat trapping" },
-              { label: "Weight", value: "Ultra-Light", note: "Disappears on skin, protection maintained" },
-              { label: "Climate", value: "Adaptive", note: "Designed and tested for Indian conditions" },
-              { label: "Coverage", value: "Complete", note: "Zero-gap architecture for confidence" },
-              { label: "Durability", value: "Lasting", note: "Performance through repeated wear" },
-            ].map((item, i) => (
+              { 
+                title: "Women Commuters", 
+                tag: "DAILY RIDES",
+                points: ["Daily scooter rides", "Office movement", "College travel", "Urban heat protection"],
+                base: "bg-[#EAE2D8]",
+                glow: "rgba(225,160,120,0.1)",
+              },
+              { 
+                title: "Young Girls", 
+                tag: "SCHOOL MOTION",
+                points: ["School commutes", "Outdoor activities", "Family travel", "Everyday comfort"],
+                base: "bg-[#DFE3DA]",
+                glow: "rgba(140,170,140,0.1)",
+              },
+              { 
+                title: "Long Outdoor Hours", 
+                tag: "STAMINA",
+                points: ["Extended movement", "Breathable wear", "Summer duration", "Daily exposure shield"],
+                base: "bg-[#E2DDD5]",
+                glow: "rgba(190,160,130,0.1)",
+              },
+            ].map((card, i) => (
+              <InteractiveCard3D key={i}>
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={viewportOnceEarly}
+                  transition={{ delay: i * 0.08, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  className={`group relative h-full min-h-[440px] border border-[#3a2a22]/5 rounded-[3.5rem] p-12 overflow-hidden transition-all duration-700 ${card.base} shadow-sm hover:-translate-y-1 will-change-transform`}
+                >
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                    style={{ background: `radial-gradient(circle at center, ${card.glow} 0%, transparent 70%)` }}
+                  />
+
+                  <div className="relative z-10 flex flex-col h-full">
+                    <span className="font-mono text-[0.5625rem] tracking-[0.3em] text-[#c76600] uppercase font-black mb-6 block opacity-70">
+                      {card.tag}
+                    </span>
+                    <h3 className="font-display text-3xl text-[#3a2a22] mb-12 leading-tight">
+                      {card.title}
+                    </h3>
+                    
+                    <div className="space-y-6 flex-1">
+                      {card.points.map((pt, j) => (
+                        <div key={j} className="flex items-center gap-5">
+                          <div className="h-[1px] w-4 bg-[#3a2a22]/10" />
+                          <span className="text-[0.9375rem] text-[#7b6a5f] font-light italic">{pt}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              </InteractiveCard3D>
+            ))}
+          </div>
+
+          {/* COMPACT FOOTER STRIP — Integrated into Section 5 */}
+          <div className="mt-24 pt-16 border-t border-[#3a2a22]/5">
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-6">
+              {[
+                "Breathable Comfort",
+                "Lightweight Movement",
+                "Heat Ready Wear",
+                "Exposure Protection",
+                "Long Hour Comfort",
+              ].map((f, i) => (
+                <motion.div
+                  key={f}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={viewportOnceEarly}
+                  transition={{ delay: i * 0.05, duration: 0.8 }}
+                  className="flex items-center gap-3 group cursor-default"
+                >
+                  <div className="h-1 w-1 rounded-full bg-[#c76600]/40 group-hover:bg-[#c76600] transition-colors duration-500" />
+                  <span className="font-mono text-[0.5rem] md:text-[0.5625rem] tracking-[0.25em] text-[#3a2a22]/40 uppercase font-black group-hover:text-[#c76600] transition-colors duration-500">
+                    {f}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SECTION 7: ROADMAP ═══ */}
+      <section className="relative py-[120px]">
+        <div className="mx-auto max-w-[1320px] px-5 sm:px-8">
+          <div className="flex flex-col lg:flex-row justify-between items-end mb-20 gap-8 text-left">
+            <div className="max-w-xl">
+              <span className="font-mono text-[0.625rem] tracking-[0.4em] text-[#c76600] uppercase font-bold mb-6 block">
+                ROADMAP
+              </span>
+              <h2 className="font-display text-[#3a2a22] tracking-tight leading-[1.1]" style={{ fontSize: "clamp(2.5rem, 6vw, 4rem)" }}>
+                Thoughtfully <span className="italic">Growing</span>
+              </h2>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: "Soliva Men", badge: "In Progress", desc: "Masculine movement guards." },
+              { title: "Soliva Kids", badge: "In Progress", desc: "Gentle school protection." },
+              { title: "Neck Shield", badge: "In Progress", desc: "Integrated facial guard." },
+              { title: "Future Essentials", badge: "In Progress", desc: "Urban movement accessories." },
+            ].map((card, i) => (
               <motion.div
-                key={item.label}
-                initial={{ opacity: 0, y: 12 }}
+                key={card.title}
+                initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={viewportOnceEarly}
-                transition={{ delay: Math.min(i * 0.05, 0.25), duration: 0.6, ease }}
-                className="bg-white/75 px-6 py-6"
+                transition={{ delay: i * 0.05, duration: 0.8 }}
+                className="group relative bg-[#EDEBE8]/30 border border-[#3a2a22]/5 rounded-[2.5rem] p-10 transition-all duration-700 hover:bg-[#EDEBE8]/60 will-change-transform"
               >
-                <span className="font-mono text-[0.5rem] tracking-[0.25em] text-[#c76600] uppercase font-semibold">
-                  {item.label}
-                </span>
-                <div className="mt-2 font-display text-[1.0625rem] text-[#3a2a22] tracking-tight font-medium">
-                  {item.value}
+                <div className="flex flex-col gap-10 text-left h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-[#3a2a22]/5 flex items-center justify-center group-hover:bg-white transition-all duration-500">
+                    <Plus size={18} className="text-[#3a2a22]/30 group-hover:text-[#c76600]" />
+                  </div>
+                  <div className="mt-auto">
+                    <span className="font-mono text-[0.5rem] tracking-[0.2em] text-[#c76600] uppercase font-black mb-3 block">
+                      {card.badge}
+                    </span>
+                    <h4 className="font-display text-2xl text-[#3a2a22] mb-4">
+                      {card.title}
+                    </h4>
+                    <p className="text-[0.875rem] text-[#a08f84] font-light leading-snug">{card.desc}</p>
+                  </div>
                 </div>
-                <p className="mt-1.5 text-[0.75rem] text-[#5a4a3f] font-light leading-relaxed">
-                  {item.note}
-                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ SECTION 6: Conversion CTA ═══ */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F3EDE4] via-[#EDE5DA] to-[#E6DDCE]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(245,130,13,0.04),transparent_45%)]" />
-
-        <div className="relative mx-auto max-w-[68rem] px-5 sm:px-8 py-16 sm:py-22">
+      {/* ═══ SECTION 8: FINAL CTA ═══ */}
+      <section className="relative h-[70vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FAF7F3] via-[#EDE5DA] to-[#F3EDE4]" />
+        <div className="relative z-10 mx-auto max-w-[900px] px-5 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={viewportOnce}
-            transition={{ duration: 0.9, ease }}
-            className="text-center"
+            transition={{ duration: 1.2 }}
           >
-            <h3
-              className="font-display text-[#3a2a22] tracking-tight leading-[1.1]"
-              style={{ fontSize: "clamp(1.5rem, 4.5vw, 2.75rem)" }}
-            >
-              Thoughtfully layered.
-              <br />
-              <span className="italic text-[#c76600]">Effortlessly worn.</span>
-            </h3>
-
-            <p className="mx-auto mt-4 max-w-sm text-[0.8125rem] text-[#a08f84] font-light leading-relaxed">
-              Browse what's already shippable on the{" "}
-              <Link
-                to="/products"
-                search={{ sort: "newest" }}
-                className="text-[#3a2a22] underline underline-offset-4 decoration-[#3a2a22]/20 hover:decoration-[#3a2a22]/50 transition-colors duration-300"
-              >
-                shop catalogue
-              </Link>
-              .
-            </p>
-
-            <Link
-              to="/products"
-              search={{ sort: "newest" }}
-              className="mt-6 inline-flex items-center gap-2 px-7 py-3 rounded-full border border-[#3a2a22]/12 bg-white/35 backdrop-blur-[4px] font-mono text-[0.625rem] tracking-[0.18em] uppercase font-semibold text-[#3a2a22] transition-all duration-500 hover:bg-[#3a2a22] hover:text-[#f7f3ee] hover:border-[#3a2a22] hover:shadow-[0_6px_20px_rgba(58,42,34,0.16)]"
-            >
-              Shop All Editions
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                <path d="M5.25 3.5L8.75 7L5.25 10.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
+            <h2 className="font-display text-[#3a2a22] leading-[1.1] mb-10" style={{ fontSize: "clamp(3rem, 8vw, 5.5rem)" }}>
+              Thoughtful Protection <br /> For Everyday Life
+            </h2>
+            <div className="flex flex-col sm:flex-row justify-center gap-6">
+              <button className="px-14 py-6 rounded-full bg-[#3a2a22] text-[#f7f3ee] font-mono text-[0.75rem] tracking-[0.25em] uppercase font-black transition-all duration-500 hover:-translate-y-1">
+                Explore Collection
+              </button>
+            </div>
           </motion.div>
         </div>
       </section>
     </div>
-  );
-}
-
-function ProductCard({ product, index }: { product: Product; index: number }) {
-  const cart = useCart();
-  const [wishlisted, setWishlisted] = useState(false);
-  const [addedToCart, setAddedToCart] = useState(false);
-
-  function handleAddToCart(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    cart.add({
-      productId: product.slug,
-      slug: product.slug,
-      name: product.name,
-      image: product.image,
-      priceCents: product.priceCents,
-      currency: "INR",
-    });
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2000);
-  }
-
-  function handleWishlist(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    setWishlisted((w) => !w);
-  }
-
-  const savingsPercent = Math.round(
-    ((product.originalPriceCents - product.priceCents) / product.originalPriceCents) * 100
-  );
-
-  return (
-    <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={viewportOnceEarly}
-      transition={{ delay: Math.min(index * 0.06, 0.24), duration: 0.7, ease }}
-      className="group flex flex-col rounded-2xl border border-[#3a2a22]/[0.05] bg-white/40 backdrop-blur-[2px] overflow-hidden transition-all duration-600 ease-[cubic-bezier(0.21,0.47,0.32,0.98)] hover:shadow-[0_12px_32px_-8px_rgba(58,42,34,0.1)] hover:-translate-y-1"
-    >
-      {/* Image container — reduced from aspect-[4/5] to aspect-[5/6] for tighter proportion */}
-      <Link
-        to="/products/$slug"
-        params={{ slug: product.slug }}
-        className="block relative aspect-[5/6] overflow-hidden"
-      >
-        <div className={`absolute inset-0 bg-gradient-to-br ${product.tone} opacity-75 transition-opacity duration-600 group-hover:opacity-90`} />
-        <div
-          className="absolute inset-0 opacity-30 transition-opacity duration-800 group-hover:opacity-55"
-          style={{ background: `radial-gradient(circle at 50% 40%, ${product.glow}, transparent 60%)` }}
-        />
-
-        {/* Product image — controlled sizing with generous padding */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center p-8 sm:p-10">
-          <motion.img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-contain drop-shadow-[0_6px_16px_rgba(58,42,34,0.1)] transition-transform duration-600 ease-[cubic-bezier(0.21,0.47,0.32,0.98)] group-hover:scale-[1.04]"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={viewportOnceEarly}
-            transition={{ delay: 0.1 + index * 0.04, duration: 0.6, ease }}
-          />
-        </div>
-
-        {/* Ground shadow */}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-[7%] w-[45%] h-2 rounded-[50%] bg-[#3a2a22]/10 blur-[8px] pointer-events-none z-[5]" />
-
-        {/* Edition chip */}
-        <div className="absolute top-3 left-3 z-20 bg-white/50 backdrop-blur-[5px] rounded-lg px-2.5 py-1.5 border border-white/25">
-          <span className="font-mono text-[0.4375rem] tracking-[0.2em] text-[#3a2a22]/45 uppercase font-semibold block leading-none">Ed.</span>
-          <span className="font-mono text-[0.8125rem] tracking-tight text-[#3a2a22] font-bold block mt-px leading-none">{product.id}</span>
-        </div>
-
-        {/* Badge */}
-        <div className="absolute top-3 right-3 z-20 bg-white/50 backdrop-blur-[5px] rounded-full px-2.5 py-1 border border-white/25">
-          <span className="font-mono text-[0.4375rem] tracking-[0.15em] text-[#c76600] uppercase font-semibold">{product.badge}</span>
-        </div>
-
-        {/* Wishlist button */}
-        <button
-          onClick={handleWishlist}
-          className="absolute bottom-3 right-3 z-20 w-8 h-8 rounded-full bg-white/50 backdrop-blur-[5px] border border-white/25 flex items-center justify-center transition-all duration-300 hover:bg-white/70 hover:scale-110"
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill={wishlisted ? "#c76600" : "none"} stroke={wishlisted ? "#c76600" : "#3a2a22"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-60">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
-        </button>
-      </Link>
-
-      {/* Content block — denser, more commercial */}
-      <div className="flex flex-col flex-1 px-4 pt-3.5 pb-4">
-        {/* Title + line */}
-        <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
-          <h3 className="font-display text-[1rem] sm:text-[1.0625rem] text-[#3a2a22] tracking-tight leading-snug font-medium line-clamp-1">
-            {product.name}
-          </h3>
-          <p className="mt-0.5 text-[0.75rem] text-[#7b6a5f]/70 font-light italic line-clamp-1">
-            {product.line}
-          </p>
-        </Link>
-
-        {/* Trust microcopy */}
-        <p className="mt-2 text-[0.6875rem] text-[#7b6a5f]/55 font-light leading-relaxed line-clamp-2">
-          {product.description}
-        </p>
-
-        {/* Feature row */}
-        <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-0.5">
-          {product.features.map((f) => (
-            <span key={f} className="flex items-center gap-1 text-[0.625rem] text-[#7b6a5f]/55 font-light">
-              <span className="w-[2.5px] h-[2.5px] rounded-full bg-[#c76600]/35" />
-              {f}
-            </span>
-          ))}
-        </div>
-
-        {/* Tags */}
-        <div className="mt-2.5 flex flex-wrap gap-1">
-          {product.tags.map((tag) => (
-            <span key={tag} className="border border-[#3a2a22]/[0.05] bg-[#FAF7F3]/80 rounded-full px-2 py-[3px] text-[0.4375rem] font-mono tracking-[0.12em] uppercase text-[#3a2a22]/50 font-semibold">
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {/* Spacer to push pricing+CTA to bottom */}
-        <div className="flex-1 min-h-2" />
-
-        {/* Trust line */}
-        <div className="mt-3 flex items-center gap-1.5">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c76600" strokeWidth="1.5" className="opacity-45">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-          <span className="font-mono text-[0.5rem] tracking-[0.1em] text-[#7b6a5f]/50 uppercase">{product.trust}</span>
-        </div>
-
-        {/* Divider */}
-        <div className="mt-2.5 h-px bg-[#3a2a22]/[0.05]" />
-
-        {/* Pricing */}
-        <div className="mt-2.5 flex items-baseline gap-2">
-          <span className="font-mono text-[1.0625rem] text-[#3a2a22] tracking-tight font-semibold">
-            &#8377;799
-          </span>
-          <span className="font-mono text-[0.6875rem] text-[#a08f84]/45 line-through tracking-tight">
-            &#8377;1,200
-          </span>
-          <span className="font-mono text-[0.4375rem] tracking-[0.15em] text-[#c76600] uppercase font-semibold bg-[#c76600]/[0.06] px-1.5 py-[2px] rounded-full">
-            {savingsPercent}% off
-          </span>
-        </div>
-
-        {/* Delivery line */}
-        <p className="mt-1.5 text-[0.5625rem] text-[#7b6a5f]/40 font-light">
-          Limited Launch Edition &middot; Free shipping
-        </p>
-
-        {/* CTA row */}
-        <div className="mt-3 flex gap-2">
-          <button
-            onClick={handleAddToCart}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full font-mono text-[0.5625rem] tracking-[0.15em] uppercase font-semibold transition-all duration-500 ${
-              addedToCart
-                ? "bg-[#2d6b3f] text-white"
-                : "bg-[#3a2a22] text-[#f7f3ee] hover:bg-[#4a3a32] hover:shadow-[0_4px_16px_rgba(58,42,34,0.16)]"
-            }`}
-          >
-            {addedToCart ? (
-              <>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Added
-              </>
-            ) : (
-              <>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <path d="M16 10a4 4 0 01-8 0" />
-                </svg>
-                Add to Cart
-              </>
-            )}
-          </button>
-          <Link
-            to="/products/$slug"
-            params={{ slug: product.slug }}
-            className="flex items-center justify-center px-3.5 py-2.5 rounded-full border border-[#3a2a22]/10 font-mono text-[0.5625rem] tracking-[0.12em] uppercase font-semibold text-[#3a2a22]/65 transition-all duration-400 hover:border-[#3a2a22]/25 hover:text-[#3a2a22]"
-          >
-            View
-          </Link>
-        </div>
-      </div>
-    </motion.article>
   );
 }

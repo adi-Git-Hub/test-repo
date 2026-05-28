@@ -111,46 +111,63 @@ export function Header() {
   };
 
   return (
-    <header className={cn(
-      "fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none transition-all duration-700 ease-in-out",
-      isHidden ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
-    )}>
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none transition-all duration-700 ease-in-out",
+        isHidden ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100",
+      )}
+    >
       {/* 
           ATHER-STYLE PREMIUM SHELL SCALE 
           -------------------------------
           Larger floating presence with disciplined Gradio internal rhythm.
           Increased vertical breathing and shell geometry for a premium feel.
       */}
-      <div 
+      <div
         className={cn(
           "pointer-events-auto relative mx-auto transition-all duration-700 ease-in-out flex items-center justify-between",
           "border-b backdrop-blur-xl",
           "before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:pointer-events-none",
           "after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-white/20 after:pointer-events-none",
-          isScrolled 
-            ? "h-14 w-[min(96vw,1100px)] px-6 mt-2 rounded-2xl border border-white/20 bg-white/40 shadow-editorial" 
-            : "h-16 w-full px-8 mt-0 rounded-none border-transparent bg-white/40 shadow-none"
+          isScrolled
+            ? "h-14 w-[min(96vw,1100px)] px-6 mt-2 rounded-2xl border border-white/20 bg-white/40 shadow-editorial"
+            : "h-16 w-full px-8 mt-0 rounded-none border-transparent bg-white/40 shadow-none",
         )}
       >
-        <div className={cn(
-          "flex h-full w-full items-center justify-between mx-auto transition-all duration-700",
-          !isScrolled && "max-w-7xl"
-        )}>
-          {/* Desktop Nav — Engineered readable rhythm */}
-          <nav className="hidden md:flex items-center gap-6 h-full">
-            {primaryLinks.map((l) => (
-              <Link
-                key={l.label}
-                to={l.to}
-                search={l.search as any}
-                className="text-[13px] font-medium tracking-tight text-ink-default/70 hover:text-ink-strong transition-colors outline-none"
-                activeOptions={{ exact: l.to === "/" }}
-                activeProps={{ className: "text-ink-strong font-semibold" }}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
+        <div
+          className={cn(
+            "flex h-full w-full items-center justify-between mx-auto transition-all duration-700",
+            !isScrolled && "max-w-7xl",
+          )}
+        >
+          <div className="flex items-center gap-8 lg:gap-12 h-full">
+            {/* Soliva Branding — Left aligned, increased to ~20% of navbar length */}
+            <Link to="/" className="flex items-center outline-none group h-full py-2">
+              <img
+                src="/logo-new.png"
+                alt="Soliva"
+                className={cn(
+                  "object-contain transition-all duration-700 ease-in-out h-full w-auto max-w-[200px] lg:max-w-[240px]",
+                )}
+              />
+            </Link>
+
+            {/* Desktop Nav — Engineered readable rhythm */}
+            <nav className="hidden md:flex items-center gap-6 h-full">
+              {primaryLinks.map((l) => (
+                <Link
+                  key={l.label}
+                  to={l.to}
+                  search={l.search as any}
+                  className="text-[13px] font-medium tracking-tight text-ink-default/70 hover:text-ink-strong transition-colors outline-none"
+                  activeOptions={{ exact: l.to === "/" }}
+                  activeProps={{ className: "text-ink-strong font-semibold" }}
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
           {/* Action Cluster — Continuous Utility Strip */}
           <div className="flex items-center gap-5 ml-auto">
@@ -201,36 +218,48 @@ export function Header() {
                       aria-label={`Account · ${session.user.name}`}
                       className="rounded-full outline-none transition-all hover:opacity-85 focus-visible:ring-2 focus-visible:ring-orange-glow/30"
                     >
-                      <Avatar
-                        src={session.user.avatarUrl}
-                        name={session.user.name}
-                        size={44}
-                      />
+                      <Avatar src={session.user.avatarUrl} name={session.user.name} size={44} />
                     </button>
                   ) : (
                     // Signed out → unchanged icon + "Account" text trigger.
                     <button className="flex h-10.5 px-4 items-center justify-center gap-2.5 rounded-full text-ink-default/70 hover:text-ink-strong hover:bg-black/5 transition-all outline-none">
                       <User className="h-[18px] w-[18px]" />
-                      <span className="hidden lg:inline text-[13px] font-medium tracking-tight">Account</span>
+                      <span className="hidden lg:inline text-[13px] font-medium tracking-tight">
+                        Account
+                      </span>
                     </button>
                   )}
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={12} className="w-52 rounded-xl border-border/40 shadow-lg">
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={12}
+                  className="w-52 rounded-xl border-border/40 shadow-lg"
+                >
                   {session ? (
                     <>
                       <DropdownMenuLabel className="px-4 py-3">
-                        <span className="block text-[9px] tracking-[0.2em] text-muted-foreground uppercase font-black mb-1">Account</span>
-                        <div className="truncate text-sm font-semibold text-ink-strong">{session.user.name}</div>
+                        <span className="block text-[9px] tracking-[0.2em] text-muted-foreground uppercase font-black mb-1">
+                          Account
+                        </span>
+                        <div className="truncate text-sm font-semibold text-ink-strong">
+                          {session.user.name}
+                        </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent/50 text-[12px] font-medium py-2.5 px-4">
+                      <DropdownMenuItem
+                        asChild
+                        className="cursor-pointer focus:bg-accent/50 text-[12px] font-medium py-2.5 px-4"
+                      >
                         <Link to="/profile" className="flex items-center w-full">
                           <User className="mr-3 h-4 w-4 opacity-70" />
                           Profile
                         </Link>
                       </DropdownMenuItem>
                       {session.user.role === "admin" && (
-                        <DropdownMenuItem asChild className="cursor-pointer focus:bg-accent/50 text-[12px] font-medium py-2.5 px-4">
+                        <DropdownMenuItem
+                          asChild
+                          className="cursor-pointer focus:bg-accent/50 text-[12px] font-medium py-2.5 px-4"
+                        >
                           <Link to="/admin/dashboard" className="flex items-center w-full">
                             <LayoutDashboard className="mr-3 h-4 w-4 opacity-70" />
                             Admin dashboard
@@ -238,23 +267,32 @@ export function Header() {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={() => logout.mutate()} className="cursor-pointer focus:bg-red-500/5 text-red-500 text-[12px] font-bold py-2.5 px-4">
+                      <DropdownMenuItem
+                        onSelect={() => logout.mutate()}
+                        className="cursor-pointer focus:bg-red-500/5 text-red-500 text-[12px] font-bold py-2.5 px-4"
+                      >
                         <LogOut className="mr-3 h-4 w-4 opacity-70" />
                         Sign out
                       </DropdownMenuItem>
                     </>
                   ) : (
                     authLinks.map((l) => (
-                      <DropdownMenuItem key={l.to} asChild className="cursor-pointer focus:bg-accent/50 text-[12px] font-medium py-2.5 px-4">
-                        <Link to={l.to} className="w-full">{l.label}</Link>
+                      <DropdownMenuItem
+                        key={l.to}
+                        asChild
+                        className="cursor-pointer focus:bg-accent/50 text-[12px] font-medium py-2.5 px-4"
+                      >
+                        <Link to={l.to} className="w-full">
+                          {l.label}
+                        </Link>
                       </DropdownMenuItem>
                     ))
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Link 
-                to="/cart" 
+              <Link
+                to="/cart"
                 className="flex h-10.5 px-4 items-center justify-center gap-2.5 rounded-full text-ink-default/70 hover:text-ink-strong hover:bg-black/5 transition-all outline-none"
               >
                 <div className="relative">
@@ -265,7 +303,9 @@ export function Header() {
                     </span>
                   )}
                 </div>
-                <span className="hidden lg:inline text-[13px] font-medium tracking-tight">Cart</span>
+                <span className="hidden lg:inline text-[13px] font-medium tracking-tight">
+                  Cart
+                </span>
               </Link>
 
               <div className="hidden lg:flex items-center ml-2 border-l border-border/10 pl-3">
